@@ -1,0 +1,757 @@
+import pygame
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the game window
+window_width = 800
+window_height = 600
+game_display = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption('Belot')
+
+# Define some colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+
+# Set up the game clock
+clock = pygame.time.Clock()
+
+# Game loop
+game_exit = False
+while not game_exit:
+
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_exit = True
+
+    # Update the game display
+    game_display.fill(white)
+    pygame.display.update()
+
+    # Set the frame rate
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
+quit()
+import random
+
+class Card:
+    def __init__(self, suit, rank):
+        self.suit = suit
+        self.rank = rank
+
+class Deck:
+    def __init__(self):
+        self.cards = []
+        for suit in ['Spades', 'Hearts', 'Diamonds', 'Clubs']:
+            for rank in range(7, 15):
+                self.cards.append(Card(suit, rank))
+        random.shuffle(self.cards)
+    
+    def deal_card(self):
+        return self.cards.pop(0)
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
+        self.turn = False
+
+    def draw_card(self, card):
+        self.hand.append(card)
+
+    def play_card(self, card):
+        self.hand.remove(card)
+# Set up the players
+player_names = ['Player 1', 'Player 2', 'Player 3', 'Player 4']
+players = []
+for name in player_names:
+    players.append(Player(name))
+
+# Deal the cards
+deck = Deck()
+for i in range(5):
+    for player in players:
+        player.draw_card(deck.deal_card())
+
+# Set the first player's turn to True
+players[0].turn = True
+
+# Game loop
+while not game_exit:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_exit = True
+
+    # Update the game display
+    game_display.fill(white)
+    pygame.display.update()
+
+    # Set the frame rate
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
+quit()
+class Card:
+    def __init__(self, suit, rank):
+        self.suit = suit
+        self.rank = rank
+        self.trump = False
+        if suit == 'Hearts':
+            self.points = 10
+        elif suit == 'Diamonds':
+            self.points = 9
+        elif suit == 'Clubs' and rank == 11:
+            self.points = 20
+        elif rank == 14:
+            self.points = 11
+        else:
+            self.points = 0
+
+    def __lt__(self, other):
+        if self.trump and not other.trump:
+            return False
+        elif not self.trump and other.trump:
+            return True
+        elif self.suit != other.suit:
+            return False
+        else:
+            return self.rank < other.rank
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
+        self.turn = False
+        self.points = 0
+        self.tricks = []
+
+    def draw_card(self, card):
+        self.hand.append(card)
+
+    def play_card(self, card):
+        self.hand.remove(card)
+        self.tricks.append(card)
+        return card
+
+    def choose_trump(self):
+        suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+        for suit in suits:
+            for card in self.hand:
+                if card.suit == suit and card.rank == 8:
+                    card.trump = True
+                    return suit
+        return random.choice(suits)
+class Game:
+    def __init__(self, players):
+        self.players = players
+        self.deck = Deck()
+        self.trump = None
+
+    def deal_cards(self):
+        for i in range(5):
+            for player in self.players:
+                card = self.deck.draw_card()
+                player.draw_card(card)
+
+    def play_round(self):
+        for player in self.players:
+            player.turn = False
+        for i in range(5):
+            cards_in_play = []
+            for player in self.players:
+                player.turn = True
+                card = player.play_card()
+                cards_in_play.append(card)
+            winner = self.find_winner(cards_in_play)
+            winner.tricks += cards_in_play
+        for player in self.players:
+            player.turn = False
+
+    def find_winner(self, cards):
+        highest_card = None
+        winner = None
+        for card in cards:
+            if highest_card is None or card > highest_card:
+                highest_card = card
+                winner = self.get_player_by_card(card)
+        return winner
+
+    def get_player_by_card(self, card):
+        for player in self.players:
+            if card in player.tricks:
+                return player
+        return None
+class Player:
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
+        self.turn = False
+        self.points = 0
+        self.tricks = []
+
+    def draw_card(self, card):
+        self.hand.append(card)
+
+    def play_card(self):
+        return self.choose_card()
+
+    def choose_card(self):
+        return self.hand.pop()
+
+    def choose_trump(self):
+        suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+        for suit in suits:
+            for card in self.hand:
+                if card.suit == suit and card.rank == 8:
+                    card.trump = True
+                    return suit
+        return random.choice(suits)
+    
+    def calculate_points(self):
+        for trick in self.tricks:
+            self.points += trick.points
+        if len(self.tricks) >= 3:
+            self.points += 20
+        if len(self.tricks) == 5:
+            self.points += 10
+        if self.points >= 90:
+            self.points += 100
+class ComputerPlayer(Player):
+    def choose_card(self):
+        return random.choice(self.hand)
+class Game:
+    def __init__(self, players):
+        self.players = players
+        self.deck = Deck()
+        self.trump = None
+
+    def create_players(self, num_human_players):
+        players = []
+        for i in range(num_human_players):
+            name = input("Enter player name: ")
+            players.append(Player(name))
+        for i in range(len(self.players) - num_human_players):
+            players.append(ComputerPlayer("Computer " + str(i+1)))
+        self.players = players
+class Game:
+    ...
+
+    def play_trick(self):
+        trick = Trick(self.players, self.trump)
+        for i in range(len(self.players)):
+            player = self.players[i]
+            card = player.choose_card()
+            trick.play_card(player, card)
+        winner = trick.get_winner()
+        print(winner.name, "wins the trick!")
+        return winner
+
+    def play(self):
+        while not self.is_game_over():
+            self.play_trick()
+def main():
+    num_players = int(input("Enter number of players: "))
+    num_human_players = int(input("Enter number of human players: "))
+    game = Game(num_players, num_human_players)
+    game.play()
+
+if __name__ == "__main__":
+    main()
+class Game:
+    ...
+
+    def bid(self):
+        for player in self.players:
+            player.bid = random.randint(80, 160)
+        max_bid = max(player.bid for player in self.players)
+        bidder = [player for player in self.players if player.bid == max_bid][0]
+        print(bidder.name, "wins the bid with", bidder.bid, "points!")
+        self.trump = self.get_trump()
+        print("Trump suit is", self.trump)
+
+    def get_trump(self):
+        for suit in SUITS:
+            if any(card.suit == suit and card.rank == "J" for card in self.deck.cards):
+                return suit
+        return random.choice(SUITS)
+class Game:
+    ...
+
+    def play(self):
+        while not self.is_game_over():
+            self.bid()
+            self.play_trick()
+
+    def is_game_over(self):
+        return False # placeholder
+class Game:
+    ...
+
+    def score_trick(self, trick):
+        winner = trick.get_winner()
+        points = sum(card.rank_value for card in trick.cards)
+        winner.team.score += points
+        print(winner.name, "wins the trick and scores", points, "points!")
+
+    def is_game_over(self):
+        return any(team.score >= 151 for team in self.teams)
+
+    def get_winner(self):
+        return max(self.teams, key=lambda team: team.score)
+def main():
+    num_players = int(input("Enter number of players: "))
+    num_human_players = int(input("Enter number of human players: "))
+    game = Game(num_players, num_human_players)
+    game.play()
+    print(game.get_winner().name, "wins the game with", game.get_winner().score, "points!")
+
+if __name__ == "__main__":
+    main()
+class Player:
+    ...
+
+    def choose_card(self, valid_cards):
+        if self.is_computer:
+            return self.ai.choose_card(valid_cards)
+        else:
+            print(f"{self.name}, it's your turn to play!")
+            print("Your hand:", self.hand)
+            while True:
+                card_str = input("Enter the card you want to play: ")
+                try:
+                    card = Card.from_string(card_str)
+                    if card in valid_cards:
+                        return card
+                    else:
+                        print("Invalid card. Try again.")
+                except ValueError:
+                    print("Invalid input. Try again.")
+class Game:
+    ...
+
+    def play_trick(self):
+        trick = Trick()
+        lead_player = self.current_player
+        for i in range(len(self.players)):
+            player = self.current_player
+            valid_cards = trick.get_valid_cards(player.hand, self.trump_suit, lead_player.card_suit)
+            card = player.choose_card(valid_cards)
+            player.play_card(card)
+            trick.add_card(card, player)
+            self.current_player = self.get_next_player()
+        self.score_trick(trick)
+class Card:
+    ...
+
+    @classmethod
+    def from_string(cls, card_str):
+        if len(card_str) != 2:
+            raise ValueError("Invalid card string.")
+        rank_str = card_str[0]
+        suit_str = card_str[1]
+        if rank_str not in RANK_VALUES or suit_str not in SUIT_VALUES:
+            raise ValueError("Invalid card string.")
+        rank = RANK_VALUES[rank_str]
+        suit = SUIT_VALUES[suit_str]
+        return cls(rank, suit)
+class Player:
+    ...
+
+    def choose_card(self, valid_cards):
+        if self.is_computer:
+            return self.ai.choose_card(valid_cards)
+        else:
+            print(f"{self.name}, it's your turn to play!")
+            print("Your hand:", self.hand)
+            while True:
+                card_str = input("Enter the card you want to play: ")
+                try:
+                    card = Card.from_string(card_str)
+                    if card in valid_cards:
+                        return card
+                    else:
+                        print("Invalid card. Try again.")
+                except ValueError:
+                    print("Invalid input. Try again.")
+            if self.is_human and not valid_cards:
+                print("You don't have any cards of the lead suit. You must play a card from the trump suit or any other suit.")
+class Game:
+    ...
+
+    def run(self):
+        print("Welcome to Belot!")
+        print("Starting a new game...")
+        while self.winning_team is None:
+            try:
+                self.play_hand()
+            except ValueError as e:
+                print(e)
+                self.reset_hand()
+        self.print_scores()
+        print(f"{self.winning_team.name} wins the game!")
+class Game:
+    ...
+
+    def play_hand(self):
+        self.deal_cards()
+        self.bid_round()
+        self.play_trick()
+        self.end_hand()
+
+    def end_hand(self):
+        print("End of hand.")
+        self.scores.update(self.calculate_scores())
+        self.print_scores()
+        if self.is_game_over():
+            self.winning_team = self.get_winning_team()
+        else:
+            self.start_new_hand()
+
+    def calculate_scores(self):
+        scores = {self.teams[0]: 0, self.teams[1]: 0}
+        for trick in self.tricks:
+            winning_team, points = self.get_trick_winner(trick)
+            scores[winning_team] += points
+        return scores
+
+    def is_game_over(self):
+        return any(score >= 151 for score in self.scores.values())
+
+    def get_winning_team(self):
+        return max(self.teams, key=lambda team: self.scores[team])
+class Game:
+    ...
+
+    def play_trick(self):
+        ...
+
+        if self.current_player.is_human:
+            valid_cards = self.get_valid_cards(self.current_player.hand)
+            card = self.current_player.get_card(valid_cards)
+        else:
+            card = self.current_player.get_card(self.get_valid_cards(self.current_player.hand))
+
+        self.play_card(card)
+        print(f"{self.current_player.name} played {card}.")
+
+    def bid_round(self):
+        ...
+
+        if self.current_player.is_human:
+            bid = self.current_player.get_bid()
+        else:
+            bid = self.current_player.get_bid(self.get_valid_bids())
+
+        self.bids.append((self.current_player, bid))
+        print(f"{self.current_player.name} bid {bid}.")
+
+    def get_valid_cards(self, hand):
+        valid_cards = []
+        for card in hand:
+            if self.is_card_valid(card):
+                valid_cards.append(card)
+        return valid_cards
+
+    def is_card_valid(self, card):
+        if self.trick_suit is None:
+            return True
+        elif card.suit == self.trick_suit:
+            return True
+        elif not any(card.suit == c.suit for c in self.current_player.hand):
+            return True
+        else:
+            return False
+
+    def get_valid_bids(self):
+        valid_bids = []
+        for bid in self.bidding_system:
+            if bid > self.highest_bid:
+                valid_bids.append(bid)
+        return valid_bids
+import pygame
+
+class Game:
+    ...
+
+    def __init__(self):
+        ...
+        pygame.init()
+        self.sounds = {
+            'deal': pygame.mixer.Sound('sounds/deal.wav'),
+            'play_card': pygame.mixer.Sound('sounds/play_card.wav'),
+            'win_trick': pygame.mixer.Sound('sounds/win_trick.wav'),
+            'lose_trick': pygame.mixer.Sound('sounds/lose_trick.wav'),
+            'bid': pygame.mixer.Sound('sounds/bid.wav'),
+            'pass': pygame.mixer.Sound('sounds/pass.wav'),
+            'win_game': pygame.mixer.Sound('sounds/win_game.wav'),
+            'lose_game': pygame.mixer.Sound('sounds/lose_game.wav')
+        }
+
+    def play_sound(self, sound):
+        self.sounds[sound].play()
+import pygame
+
+class Game:
+    ...
+
+    def __init__(self):
+        ...
+        pygame.init()
+        self.screen = pygame.display.set_mode((800, 600))
+        self.background = pygame.image.load('images/background.jpg')
+        self.card_images = {
+            'heart_7': pygame.image.load('images/heart_7.png'),
+            'heart_8': pygame.image.load('images/heart_8.png'),
+            'heart_9': pygame.image.load('images/heart_9.png'),
+            'heart_10': pygame.image.load('images/heart_10.png'),
+            ...
+        }
+
+    def display_animation(self, animation):
+        pass
+class Game:
+    ...
+
+    def play_trick(self):
+        ...
+        winning_card = self.trick.get_winning_card()
+        winner_index = self.players.index(winning_card.player)
+        self.trick.set_winner(self.players[winner_index])
+
+        if winner_index == self.player_index:
+            self.play_sound('win_trick')
+        else:
+            self.play_sound('lose_trick')
+
+        self.player_index = winner_index
+class Game:
+    ...
+
+    def deal(self):
+        ...
+        for i in range(4):
+            for j in range(3):
+                card = self.deck.deal()
+                self.players[i].add_card(card)
+
+                x, y = self.get_card_position(i, j)
+                self.display_animation('deal', x, y)
+
+        self.current_player_index = self.get_first_player_index()
+
+    def play_card(self, card):
+        ...
+        player_index = self.players.index(player)
+        self.current_trick.add_card(card, player)
+
+        x, y = self.get_card_position(player_index, len(self.current_trick.cards) - 1)
+        self.display_animation('play_card', x, y)
+
+        if len(self.current_trick.cards) == 4:
+            self.play_trick()
+class Game:
+    ...
+
+    def play_trick(self):
+        ...
+        winning_card = self.trick.get_winning_card()
+        winner_index = self.players.index(winning_card.player)
+        self.trick.set_winner(self.players[winner_index])
+
+        if winner_index == self.player_index:
+            self.play_sound('win_trick')
+            self.scores[self.team_index] += self.trick.get_points()
+        else:
+            self.play_sound('lose_trick')
+            self.scores[self.other_team_index] += self.trick.get_points()
+
+        self.player_index = winner_index
+
+        if self.deck.is_empty():
+            self.end_round()
+
+    def end_round(self):
+        ...
+        self.display_scoreboard()
+class Game:
+    ...
+
+    def start_round(self):
+        self.deck = Deck()
+        self.deck.shuffle()
+
+        self.deal()
+
+        self.trump_suit = None
+        while self.trump_suit is None:
+            suit = input("Choose trump suit: ")
+            if suit in ['spades', 'hearts', 'diamonds', 'clubs']:
+                self.trump_suit = suit
+            else:
+                print("Invalid suit")
+
+        self.current_player_index = self.get_first_player_index()
+
+    def get_first_player_index(self):
+        ...
+        for i in range(4):
+            if self.players[i].has_card(Card('7', self.trump_suit)):
+                return i
+
+        return 0
+class Game:
+    ...
+
+    def start_round(self):
+        ...
+        self.pass_cards()
+
+        self.current_player_index = self.get_first_player_index()
+
+    def pass_cards(self):
+        if self.round_number == 1:
+            self.pass_cards_round()
+        else:
+            self.pass_cards_direction()
+        self.display_passing_message()
+
+    def pass_cards_round(self):
+        cards_to_pass = []
+        for i in range(3):
+            card = self.players[self.player_index].get_card()
+            cards_to_pass.append(card)
+
+        self.player_index = self.get_next_player_index()
+
+        for i in range(3):
+            partner_index = self.get_partner_index(self.player_index)
+            partner = self.players[partner_index]
+            partner.add_card(cards_to_pass[i])
+
+    def pass_cards_direction(self):
+        pass_direction = self.get_pass_direction()
+        if pass_direction == 'left':
+            self.pass_cards_left()
+        elif pass_direction == 'right':
+            self.pass_cards_right()
+        elif pass_direction == 'across':
+            self.pass_cards_across()
+
+    def pass_cards_left(self):
+        ...
+    def pass_cards_right(self):
+        ...
+    def pass_cards_across(self):
+        ...
+
+    def display_passing_message(self):
+        ...
+class Game:
+    ...
+
+    def play_card(self, card):
+        self.trick.play_card(card)
+        self.play_sound('play_card')
+        self.animate_card(card)
+
+        if self.trick.is_complete():
+            self.play_trick()
+
+    def animate_card(self, card):
+        ...
+class Game:
+    ...
+
+    def animate_card(self, card):
+        card_rect = card.rect.copy()
+        card_rect.center = self.table_rect.center
+
+        animation_speed = 10
+        animation_steps = 10
+
+        dx = (card_rect.x - card.rect.x) / animation_steps
+        dy = (card_rect.y - card.rect.y) / animation_steps
+
+        for i in range(animation_steps):
+            card.rect.move_ip(dx, dy)
+            self.draw()
+            pygame.time.wait(animation_speed)
+
+        card.rect.center = card_rect.center
+        self.draw()
+class Game:
+    ...
+
+    def __init__(self):
+        ...
+        self.sounds = {
+            'deal_card': pygame.mixer.Sound('sounds/deal_card.wav'),
+            'play_card': pygame.mixer.Sound('sounds/play_card.wav'),
+            'win_trick': pygame.mixer.Sound('sounds/win_trick.wav'),
+            'lose_trick': pygame.mixer.Sound('sounds/lose_trick.wav'),
+            'belot': pygame.mixer.Sound('sounds/belot.wav'),
+            'no_belot': pygame.mixer.Sound('sounds/no_belot.wav'),
+        }
+
+    def play_sound(self, sound_name):
+        self.sounds[sound_name].play()
+class Game:
+    ...
+
+    def end_game(self):
+        self.display_victory_message()
+        self.reset_game()
+
+    def display_victory_message(self):
+        ...
+class Game:
+    ...
+
+    def display_victory_message(self):
+        font = pygame.font.Font('fonts/Cinzel-Regular.ttf', 64)
+        text_color = (255, 255, 255)
+        background_color = (0, 0, 0)
+
+        if self.team1.score > self.team2.score:
+            winner_text = 'Team 1 wins!'
+            score_text = f'{self.team1.score} - {self.team2.score}'
+        else:
+            winner_text = 'Team 2 wins!'
+            score_text = f'{self.team2.score} - {self.team1.score}'
+
+        winner_surface = font.render(winner_text, True, text_color)
+        winner_rect = winner_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 50))
+
+        score_surface = font.render(score_text, True, text_color)
+        score_rect = score_surface.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 + 50))
+
+        self.screen.fill(background_color)
+        self.screen.blit(winner_surface, winner_rect)
+        self.screen.blit(score_surface, score_rect)
+        pygame.display.update()
+class Game:
+    ...
+
+    def check_for_winner(self):
+        if self.team1.score >= 151:
+            self.team1.wins_game()
+            self.end_game()
+        elif self.team2.score >= 151:
+            self.team2.wins_game()
+            self.end_game()
+class Player:
+    ...
+
+    def get_card_input(self, valid_card_indices):
+        while True:
+            try:
+                card_index = int(input('Enter card index: '))
+                if card_index in valid_card_indices:
+                    return card_index
+                else:
+                    print('Invalid card index.')
+            except ValueError:
+                print('Invalid input. Please enter a number.')
